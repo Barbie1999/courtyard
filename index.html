@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>庭院 · Courtyard</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    height: 100dvh; /* 移动端动态视口 */
+    overflow: hidden;
+    font-family: "Georgia", "Times New Roman", "Songti SC", serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior: none;
+  }
+
+  /* ===== 背景 ===== */
+  .bg {
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(to bottom,
+        #7ec8e3 0%, #a8ddf0 15%, #c5e8f5 30%, #e0f0f8 42%,
+        #f5f0e0 48%, #e8dfc8 50%, #7ec8d8 52%, #5bb8d0 60%,
+        #3da8c8 72%, #2a98b8 85%, #1e88a8 100%
+      );
+    z-index: 0;
+  }
+
+  .clouds {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 45%;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .cloud {
+    position: absolute;
+    background: rgba(255,255,255,0.7);
+    border-radius: 50%;
+    filter: blur(20px);
+  }
+  .cloud.c1 { width: 200px; height: 60px; top: 12%; left: 10%; animation: floatCloud 40s linear infinite; }
+  .cloud.c2 { width: 280px; height: 70px; top: 8%; left: 45%; animation: floatCloud 55s linear infinite reverse; }
+  .cloud.c3 { width: 160px; height: 50px; top: 20%; left: 70%; animation: floatCloud 48s linear infinite; }
+  @keyframes floatCloud {
+    from { transform: translateX(0); }
+    to   { transform: translateX(80px); }
+  }
+
+  .sea-shine {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%; height: 50%;
+    z-index: 1;
+    background:
+      repeating-linear-gradient(0deg,
+        transparent 0px, rgba(255,255,255,0.08) 1px,
+        transparent 3px, transparent 10px
+      ),
+      repeating-linear-gradient(90deg,
+        transparent 0px, rgba(255,255,255,0.05) 2px,
+        transparent 6px, transparent 20px
+      );
+    mask-image: linear-gradient(to bottom, transparent 0%, black 40%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 40%);
+  }
+
+  .sea-glitter {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%; height: 48%;
+    z-index: 2;
+    background:
+      radial-gradient(ellipse 140px 8px at 50% 15%, rgba(255,255,220,0.5) 0%, transparent 100%),
+      radial-gradient(ellipse 90px 6px at 30% 30%, rgba(255,255,220,0.4) 0%, transparent 100%),
+      radial-gradient(ellipse 120px 7px at 70% 25%, rgba(255,255,220,0.45) 0%, transparent 100%),
+      radial-gradient(ellipse 70px 5px at 45% 45%, rgba(255,255,220,0.35) 0%, transparent 100%),
+      radial-gradient(ellipse 100px 6px at 60% 50%, rgba(255,255,220,0.3) 0%, transparent 100%),
+      radial-gradient(ellipse 80px 5px at 20% 55%, rgba(255,255,220,0.35) 0%, transparent 100%),
+      radial-gradient(ellipse 130px 6px at 80% 40%, rgba(255,255,220,0.4) 0%, transparent 100%),
+      radial-gradient(ellipse 60px 4px at 15% 35%, rgba(255,255,220,0.3) 0%, transparent 100%),
+      radial-gradient(ellipse 110px 5px at 55% 65%, rgba(255,255,220,0.25) 0%, transparent 100%),
+      radial-gradient(ellipse 75px 5px at 35% 70%, rgba(255,255,220,0.2) 0%, transparent 100%);
+    animation: glitter 3.5s ease-in-out infinite alternate;
+  }
+  @keyframes glitter {
+    from { opacity: 0.5; }
+    to   { opacity: 1; }
+  }
+
+  .sparkles {
+    position: fixed;
+    bottom: 3%; left: 0;
+    width: 100%; height: 45%;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .sparkle {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(255,255,240,0.95);
+    box-shadow: 0 0 8px 3px rgba(255,255,220,0.7);
+    animation: sparkleAnim 2.8s ease-in-out infinite;
+  }
+  @keyframes sparkleAnim {
+    0%, 100% { opacity: 0; transform: scale(0.4); }
+    50%      { opacity: 1; transform: scale(1.5); }
+  }
+
+  /* 神庙 —— 响应式宽度 */
+  .temple {
+    position: fixed;
+    bottom: 26%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(260px, 70vw, 460px);
+    height: auto;
+    aspect-ratio: 520 / 220;
+    z-index: 2;
+    opacity: 0.9;
+    transition: opacity 0.8s ease;
+  }
+  .temple svg {
+    width: 100%; height: 100%;
+    filter: drop-shadow(0 8px 20px rgba(30,60,80,0.3));
+  }
+
+  /* ===== 卷轴 ===== */
+  .scroll-wrapper {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    width: min(480px, 88vw);
+    max-height: 88dvh;
+    transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.8s ease,
+                transform 0.8s ease;
+  }
+  .scroll-wrapper.expanded {
+    width: min(760px, 94vw);
+  }
+  .scroll-wrapper.gone {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+    pointer-events: none;
+  }
+
+  .scroll-paper {
+    position: relative;
+    width: 100%;
+    /* 用 clamp 让内边距随屏幕缩放 */
+    padding: clamp(28px, 6vw, 56px) clamp(22px, 5.5vw, 52px) clamp(26px, 5vw, 52px);
+    max-height: 88dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+
+    background:
+      radial-gradient(ellipse 80px 60px at 8% 5%, rgba(180,160,120,0.12) 0%, transparent 100%),
+      radial-gradient(ellipse 60px 50px at 92% 95%, rgba(180,160,120,0.1) 0%, transparent 100%),
+      radial-gradient(ellipse 100px 40px at 95% 10%, rgba(160,140,100,0.08) 0%, transparent 100%),
+      radial-gradient(ellipse 70px 50px at 5% 90%, rgba(160,140,100,0.09) 0%, transparent 100%),
+      radial-gradient(ellipse 200px 120px at 50% 50%, rgba(190,170,130,0.06) 0%, transparent 100%),
+      repeating-linear-gradient(0deg,
+        transparent 0px, transparent 2px,
+        rgba(150,130,100,0.05) 2px, rgba(150,130,100,0.05) 3px
+      ),
+      repeating-linear-gradient(90deg,
+        transparent 0px, transparent 4px,
+        rgba(150,130,100,0.035) 4px, rgba(150,130,100,0.035) 5px
+      ),
+      repeating-linear-gradient(45deg,
+        transparent 0px, transparent 8px,
+        rgba(150,130,100,0.02) 8px, rgba(150,130,100,0.02) 9px
+      ),
+      linear-gradient(175deg,
+        #faf8f2 0%, #f6f2e8 25%, #fbf9f4 50%, #f4f0e5 75%, #faf8f2 100%
+      );
+
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 640' preserveAspectRatio='none'%3E%3Cpath d='M8,6 Q30,3 55,7 Q80,11 105,5 Q130,2 155,8 Q180,12 205,5 Q230,1 255,7 Q280,12 305,6 Q330,2 355,8 Q380,12 405,5 Q430,2 452,7 Q465,9 472,5 L476,14 Q473,40 477,72 Q480,110 474,148 Q470,185 477,225 Q480,262 473,300 Q468,338 476,378 Q480,415 472,455 Q467,492 475,532 Q478,568 472,608 L468,618 Q450,613 425,617 Q400,621 375,615 Q350,611 325,618 Q300,622 275,616 Q250,612 225,619 Q200,622 175,616 Q150,612 125,618 Q100,622 75,616 Q50,612 28,618 Q12,621 8,616 L5,608 Q8,568 3,530 Q0,492 7,452 Q11,415 4,378 Q0,338 8,300 Q12,262 5,225 Q1,185 8,148 Q12,110 6,72 Q3,40 8,14 Z' fill='white'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 640' preserveAspectRatio='none'%3E%3Cpath d='M8,6 Q30,3 55,7 Q80,11 105,5 Q130,2 155,8 Q180,12 205,5 Q230,1 255,7 Q280,12 305,6 Q330,2 355,8 Q380,12 405,5 Q430,2 452,7 Q465,9 472,5 L476,14 Q473,40 477,72 Q480,110 474,148 Q470,185 477,225 Q480,262 473,300 Q468,338 476,378 Q480,415 472,455 Q467,492 475,532 Q478,568 472,608 L468,618 Q450,613 425,617 Q400,621 375,615 Q350,611 325,618 Q300,622 275,616 Q250,612 225,619 Q200,622 175,616 Q150,612 125,618 Q100,622 75,616 Q50,612 28,618 Q12,621 8,616 L5,608 Q8,568 3,530 Q0,492 7,452 Q11,415 4,378 Q0,338 8,300 Q12,262 5,225 Q1,185 8,148 Q12,110 6,72 Q3,40 8,14 Z' fill='white'/%3E%3C/svg%3E");
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+
+    filter: drop-shadow(0 8px 24px rgba(80,60,30,0.22))
+            drop-shadow(0 2px 6px rgba(80,60,30,0.12));
+    transform: rotateX(1.5deg);
+    transform-origin: center center;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(180,150,100,0.3) transparent;
+  }
+
+  .scroll-paper::-webkit-scrollbar { width: 4px; }
+  .scroll-paper::-webkit-scrollbar-track { background: transparent; }
+  .scroll-paper::-webkit-scrollbar-thumb {
+    background: rgba(180,150,100,0.3);
+    border-radius: 2px;
+  }
+
+  .scroll-paper::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(120,90,50,0.22) 0%, transparent 20%),
+      radial-gradient(ellipse at 50% 100%, rgba(120,90,50,0.18) 0%, transparent 18%),
+      radial-gradient(ellipse at 0% 50%, rgba(120,90,50,0.14) 0%, transparent 14%),
+      radial-gradient(ellipse at 100% 50%, rgba(120,90,50,0.14) 0%, transparent 14%),
+      radial-gradient(ellipse at 15% 15%, rgba(120,90,50,0.1) 0%, transparent 25%),
+      radial-gradient(ellipse at 85% 85%, rgba(120,90,50,0.1) 0%, transparent 25%);
+    pointer-events: none;
+    mix-blend-mode: multiply;
+  }
+
+  .start-content {
+    transition: opacity 0.4s ease;
+  }
+
+  /* 标题 —— 响应式字号 */
+  .title {
+    text-align: center;
+    font-size: clamp(2.2rem, 10vw, 3.6rem);
+    letter-spacing: 0.5em;
+    margin-bottom: clamp(8px, 1.5vw, 12px);
+    font-weight: normal;
+    background: linear-gradient(180deg,
+      #f5e0a0 0%, #e8c878 20%, #d4a840 40%,
+      #b8862a 55%, #d4a840 70%, #e8c878 85%, #f5e0a0 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 1px 1px rgba(139,94,42,0.3))
+            drop-shadow(0 0 12px rgba(255,220,140,0.5));
+    position: relative;
+  }
+
+  .title::after {
+    content: "庭 院";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg,
+      transparent 30%, rgba(255,255,240,0.7) 48%,
+      rgba(255,255,255,0.9) 50%, rgba(255,255,240,0.7) 52%,
+      transparent 70%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    background-size: 250% 100%;
+    animation: titleShine 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes titleShine {
+    0%   { background-position: 200% 0; }
+    60%  { background-position: -80% 0; }
+    100% { background-position: -80% 0; }
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: clamp(0.6rem, 2.2vw, 0.72rem);
+    letter-spacing: 0.55em;
+    color: #b89660;
+    margin-bottom: clamp(18px, 4vw, 26px);
+    font-style: italic;
+    text-transform: uppercase;
+  }
+
+  .divider {
+    width: 100px; height: 1px;
+    margin: 0 auto clamp(16px, 3.5vw, 24px);
+    background: linear-gradient(to right, transparent, #d4b888, transparent);
+    position: relative;
+  }
+  .divider::after {
+    content: "✦";
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #d4b888;
+    font-size: 0.55rem;
+  }
+
+  .desc {
+    text-align: center;
+    font-size: clamp(0.78rem, 3.2vw, 0.85rem);
+    line-height: 2;
+    color: #9a7848;
+    margin-bottom: clamp(22px, 4.5vw, 32px);
+    letter-spacing: 0.08em;
+  }
+
+  .start-btn {
+    display: block;
+    margin: 0 auto;
+    position: relative;
+    padding: clamp(10px, 2.5vw, 14px) 0;
+    width: clamp(180px, 55vw, 240px);
+    font-size: clamp(0.82rem, 3.2vw, 0.95rem);
+    letter-spacing: 0.5em;
+    font-family: inherit;
+    color: #8b5e2a;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.35s ease;
+    text-shadow: 0 1px 0 rgba(255,250,230,0.8);
+    touch-action: manipulation;
+  }
+
+  .start-btn .btn-frame {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .start-btn .btn-frame::before,
+  .start-btn .btn-frame::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(to right,
+      transparent, #c8a860 15%, #a07840 50%, #c8a860 85%, transparent
+    );
+    transition: all 0.35s ease;
+  }
+  .start-btn .btn-frame::before { top: 0; }
+  .start-btn .btn-frame::after  { bottom: 0; }
+
+  .start-btn .flourish {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: clamp(26px, 8vw, 40px);
+    height: clamp(26px, 8vw, 40px);
+    opacity: 0.85;
+    transition: all 0.35s ease;
+    pointer-events: none;
+  }
+  .start-btn .flourish.left  { left: clamp(-38px, -9vw, -46px); }
+  .start-btn .flourish.right { right: clamp(-38px, -9vw, -46px); transform: translateY(-50%) scaleX(-1); }
+
+  .start-btn:hover,
+  .start-btn:active {
+    letter-spacing: 0.6em;
+    color: #6b4218;
+    text-shadow: 0 1px 0 rgba(255,250,230,0.9), 0 0 12px rgba(255,220,140,0.5);
+  }
+  .start-btn:hover .btn-frame::before,
+  .start-btn:hover .btn-frame::after,
+  .start-btn:active .btn-frame::before,
+  .start-btn:active .btn-frame::after {
+    background: linear-gradient(to right,
+      transparent, #e0c078 15%, #c8a040 50%, #e0c078 85%, transparent
+    );
+  }
+  .start-btn:hover .flourish,
+  .start-btn:active .flourish {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+  }
+  .start-btn:hover .flourish.right,
+  .start-btn:active .flourish.right {
+    transform: translateY(-50%) scaleX(-1) scale(1.1);
+  }
+  .start-btn:active { transform: scale(0.98); }
+
+  /* ===== 游戏内容 ===== */
+  .game-content {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .game-content.visible {
+    display: block;
+    opacity: 1;
+  }
+
+  .page {
+    display: none;
+    animation: pageFadeIn 0.7s ease;
+  }
+  .page.active {
+    display: block;
+  }
+
+  @keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 正文 —— 响应式字号 + 手机可读性 */
+  .game-text {
+    font-size: clamp(0.9rem, 3.6vw, 1rem);
+    line-height: 1.95;
+    color: #5a4028;
+    letter-spacing: 0.03em;
+    text-align: justify;
+    text-indent: 2em;
+    margin-bottom: 1.1em;
+    word-break: break-word;
+  }
+  .game-text:last-child {
+    margin-bottom: 0;
+  }
+
+  .choice-container {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(14px, 3vw, 20px);
+    margin: clamp(20px, 4vw, 28px) 0 8px;
+  }
+
+  .choice-btn {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: clamp(16px, 4vw, 20px) clamp(18px, 4.5vw, 32px);
+    font-family: inherit;
+    font-size: clamp(0.85rem, 3.4vw, 0.95rem);
+    line-height: 1.75;
+    letter-spacing: 0.03em;
+    color: #6b4a28;
+    background: rgba(250,245,232,0.5);
+    border: 1px solid #c8a860;
+    border-radius: 2px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.35s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .choice-btn::before,
+  .choice-btn::after {
+    content: "";
+    position: absolute;
+    left: 6px; right: 6px;
+    height: 1px;
+    background: linear-gradient(to right,
+      transparent, #d4b888 10%, #d4b888 90%, transparent
+    );
+    opacity: 0.6;
+    transition: all 0.35s ease;
+  }
+  .choice-btn::before { top: 5px; }
+  .choice-btn::after  { bottom: 5px; }
+
+  .choice-btn .corner {
+    position: absolute;
+    width: 14px; height: 14px;
+    opacity: 0.7;
+    transition: all 0.35s ease;
+  }
+  .choice-btn .corner.tl { top: 2px; left: 2px; }
+  .choice-btn .corner.tr { top: 2px; right: 2px; transform: scaleX(-1); }
+  .choice-btn .corner.bl { bottom: 2px; left: 2px; transform: scaleY(-1); }
+  .choice-btn .corner.br { bottom: 2px; right: 2px; transform: scale(-1); }
+
+  .choice-btn:hover,
+  .choice-btn:active {
+    background: rgba(255,250,240,0.85);
+    border-color: #a07840;
+    color: #4a2e0f;
+    box-shadow: 0 4px 20px rgba(160,128,80,0.2);
+  }
+  .choice-btn:hover::before,
+  .choice-btn:hover::after,
+  .choice-btn:active::before,
+  .choice-btn:active::after {
+    opacity: 1;
+  }
+  .choice-btn:hover .corner,
+  .choice-btn:active .corner {
+    opacity: 1;
+  }
+
+  .continue-hint {
+    text-align: center;
+    margin-top: clamp(18px, 4vw, 24px);
+    color: #b89660;
+    font-size: clamp(0.72rem, 2.8vw, 0.8rem);
+    letter-spacing: 0.3em;
+    animation: hintPulse 1.8s ease-in-out infinite;
+    cursor: pointer;
+    user-select: none;
+    padding: 8px 0;
+  }
+  @keyframes hintPulse {
+    0%, 100% { opacity: 0.3; transform: translateY(0); }
+    50%      { opacity: 0.9; transform: translateY(4px); }
+  }
+
+  /* Emoji 游戏 —— 移动端适配 */
+  .emoji-area {
+    position: relative;
+    width: 100%;
+    height: clamp(240px, 55vw, 340px);
+    margin: clamp(14px, 3vw, 20px) 0 8px;
+    border: 1px dashed rgba(200,170,110,0.4);
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(250,245,232,0.3);
+    touch-action: manipulation;
+  }
+
+  .emoji-timer {
+    position: absolute;
+    top: 8px; right: 12px;
+    font-size: clamp(0.68rem, 2.6vw, 0.75rem);
+    letter-spacing: 0.12em;
+    color: #b89660;
+    font-family: "Georgia", serif;
+    z-index: 5;
+    background: rgba(250,245,232,0.85);
+    padding: 3px 10px;
+    border-radius: 3px;
+  }
+
+  .emoji-instruction {
+    text-align: center;
+    font-size: clamp(0.78rem, 3.2vw, 0.88rem);
+    color: #8b6a3a;
+    letter-spacing: 0.12em;
+    margin-bottom: clamp(8px, 2vw, 12px);
+  }
+
+  .float-emoji {
+    position: absolute;
+    font-size: clamp(1.6rem, 6.5vw, 2rem);
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s ease, opacity 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(80,60,30,0.2));
+    animation: floatEmoji 2.5s ease-in-out infinite;
+    z-index: 4;
+    /* 移动端加大触控热区 */
+    padding: 8px;
+    margin: -8px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .float-emoji:active {
+    transform: scale(1.2);
+  }
+  .float-emoji.gone {
+    opacity: 0;
+    transform: scale(2);
+    pointer-events: none;
+  }
+
+  @keyframes floatEmoji {
+    0%, 100% { transform: translate(0, 0) rotate(-3deg); }
+    25%      { transform: translate(10px, -14px) rotate(4deg); }
+    50%      { transform: translate(-8px, 8px) rotate(-2deg); }
+    75%      { transform: translate(12px, 6px) rotate(5deg); }
+  }
+
+  /* ===== 结局页 ===== */
+  .ending-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    pointer-events: none;
+    padding: 0 20px;
+  }
+  .ending-screen.visible {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .ending-name {
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, "Songti SC", "STSong", "SimSun", "Georgia", serif;
+    font-size: clamp(1.25rem, 5.5vw, 2.2rem);
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    line-height: 1.7;
+    color: #5a3a18;
+    text-align: center;
+    max-width: 90vw;
+    opacity: 0;
+    text-shadow:
+      0 1px 0 rgba(255,250,230,0.8),
+      0 2px 14px rgba(255,240,180,0.55),
+      0 0 36px rgba(255,255,240,0.35);
+    position: relative;
+    word-break: break-word;
+  }
+
+  .ending-name::after {
+    content: "";
+    display: block;
+    width: 0;
+    height: 1px;
+    margin: clamp(16px, 3vw, 24px) auto 0;
+    background: linear-gradient(to right,
+      transparent, rgba(139,94,42,0.55), transparent
+    );
+    transition: width 1.5s ease 0.6s;
+  }
+  .ending-name.fade-in::after {
+    width: clamp(120px, 35vw, 180px);
+  }
+
+  .ending-name.fade-in {
+    animation: endingFadeIn 2.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes endingFadeIn {
+    0%   { opacity: 0; transform: translateY(16px); letter-spacing: 0.75em; filter: blur(6px); }
+    60%  { opacity: 0.6; filter: blur(1px); }
+    100% { opacity: 1; transform: translateY(0); letter-spacing: 0.3em; filter: blur(0); }
+  }
+
+  .restart-btn {
+    display: block;
+    margin-top: clamp(44px, 10vw, 72px);
+    padding: clamp(8px, 2vw, 10px) 0 clamp(10px, 2.5vw, 12px);
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, "Songti SC", "STSong", "SimSun", "Georgia", serif;
+    font-size: clamp(0.78rem, 3vw, 0.88rem);
+    font-weight: 400;
+    letter-spacing: 0.45em;
+    text-indent: 0.45em;
+    color: #7a5028;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    position: relative;
+    transition: color 0.5s ease, text-shadow 0.5s ease, letter-spacing 0.5s ease;
+    text-shadow: 0 1px 0 rgba(255,250,230,0.7);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .restart-btn::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 0;
+    height: 1px;
+    background: linear-gradient(to right,
+      transparent, rgba(139,94,42,0.7), transparent
+    );
+    transition: width 0.6s ease;
+  }
+
+  .restart-btn:hover,
+  .restart-btn:active {
+    color: #4a2e0f;
+    letter-spacing: 0.6em;
+    text-indent: 0.6em;
+    text-shadow: 0 0 18px rgba(255,220,140,0.55);
+  }
+  .restart-btn:hover::before,
+  .restart-btn:active::before {
+    width: 100%;
+  }
+
+  .restart-btn.visible {
+    opacity: 1;
+    animation: btnFadeIn 1.6s ease forwards;
+  }
+
+  @keyframes btnFadeIn {
+    0%   { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+    100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+
+  /* ===== 底部铭文 ===== */
+  .footer {
+    position: fixed;
+    bottom: max(12px, env(safe-area-inset-bottom, 12px));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-size: clamp(0.55rem, 2.2vw, 0.65rem);
+    letter-spacing: 0.35em;
+    color: rgba(255,255,240,0.55);
+    text-align: center;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    font-style: italic;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+
+  /* ===== 小屏手机优化 ===== */
+  @media (max-width: 400px) {
+    .scroll-wrapper { width: 92vw; }
+    .scroll-wrapper.expanded { width: 95vw; }
+    .scroll-paper { padding: 26px 18px 24px; }
+    .title { letter-spacing: 0.35em; }
+    .game-text { text-indent: 1.6em; }
+    .choice-btn { padding: 14px 14px; }
+  }
+
+  /* ===== 横屏适配 ===== */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .scroll-paper {
+      max-height: 92dvh;
+      padding: 20px 32px;
+    }
+    .title { font-size: clamp(1.6rem, 5vw, 2.4rem); }
+    .temple { display: none; }
+    .emoji-area { height: 60dvh; }
+    .game-text { font-size: 0.82rem; line-height: 1.75; }
+  }
+
+  /* ===== 安全区域适配（刘海屏/灵动岛） ===== */
+  @supports (padding: env(safe-area-inset-top)) {
+    .scroll-wrapper {
+      padding-top: env(safe-area-inset-top, 0);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg"></div>
+
+  <div class="clouds">
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+  </div>
+
+  <div class="sea-shine"></div>
+  <div class="sea-glitter"></div>
+
+  <div class="sparkles">
+    <div class="sparkle" style="top:12%; left:8%;   animation-delay:0.0s;"></div>
+    <div class="sparkle" style="top:22%; left:18%;  animation-delay:0.5s;"></div>
+    <div class="sparkle" style="top:8%;  left:30%;  animation-delay:1.0s;"></div>
+    <div class="sparkle" style="top:28%; left:42%;  animation-delay:1.5s;"></div>
+    <div class="sparkle" style="top:15%; left:55%;  animation-delay:2.0s;"></div>
+    <div class="sparkle" style="top:32%; left:65%;  animation-delay:2.5s;"></div>
+    <div class="sparkle" style="top:10%; left:78%;  animation-delay:0.3s;"></div>
+    <div class="sparkle" style="top:25%; left:88%;  animation-delay:0.8s;"></div>
+    <div class="sparkle" style="top:42%; left:12%;  animation-delay:1.3s;"></div>
+    <div class="sparkle" style="top:50%; left:25%;  animation-delay:1.8s;"></div>
+    <div class="sparkle" style="top:38%; left:38%;  animation-delay:2.3s;"></div>
+    <div class="sparkle" style="top:55%; left:50%;  animation-delay:0.2s;"></div>
+    <div class="sparkle" style="top:45%; left:62%;  animation-delay:0.7s;"></div>
+    <div class="sparkle" style="top:58%; left:75%;  animation-delay:1.2s;"></div>
+    <div class="sparkle" style="top:48%; left:90%;  animation-delay:1.7s;"></div>
+    <div class="sparkle" style="top:65%; left:15%;  animation-delay:2.2s;"></div>
+    <div class="sparkle" style="top:72%; left:35%;  animation-delay:0.4s;"></div>
+    <div class="sparkle" style="top:68%; left:55%;  animation-delay:0.9s;"></div>
+    <div class="sparkle" style="top:75%; left:70%;  animation-delay:1.4s;"></div>
+    <div class="sparkle" style="top:62%; left:85%;  animation-delay:1.9s;"></div>
+    <div class="sparkle" style="top:35%; left:5%;   animation-delay:2.4s;"></div>
+    <div class="sparkle" style="top:80%; left:45%;  animation-delay:0.6s;"></div>
+    <div class="sparkle" style="top:78%; left:20%;  animation-delay:1.1s;"></div>
+    <div class="sparkle" style="top:70%; left:92%;  animation-delay:1.6s;"></div>
+  </div>
+
+  <div class="temple" id="temple">
+    <svg viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+      <rect x="60" y="190" width="400" height="15" fill="#d8c8a8"/>
+      <rect x="80" y="180" width="360" height="12" fill="#e0d0b0"/>
+      <rect x="100" y="172" width="320" height="10" fill="#e8d8b8"/>
+      <rect x="120" y="164" width="280" height="10" fill="#f0e0c0"/>
+      <rect x="130" y="90" width="22" height="76" fill="#e8d8b8" rx="2"/>
+      <rect x="180" y="90" width="22" height="76" fill="#e8d8b8" rx="2"/>
+      <rect x="230" y="90" width="22" height="76" fill="#e8d8b8" rx="2"/>
+      <rect x="280" y="90" width="22" height="76" fill="#e8d8b8" rx="2"/>
+      <rect x="330" y="90" width="22" height="76" fill="#e8d8b8" rx="2"/>
+      <rect x="380" y="90" width="22" height="76" fill="#e8d8b8" rx="2"/>
+      <rect x="126" y="86" width="30" height="6" fill="#f0e0c0"/>
+      <rect x="176" y="86" width="30" height="6" fill="#f0e0c0"/>
+      <rect x="226" y="86" width="30" height="6" fill="#f0e0c0"/>
+      <rect x="276" y="86" width="30" height="6" fill="#f0e0c0"/>
+      <rect x="326" y="86" width="30" height="6" fill="#f0e0c0"/>
+      <rect x="376" y="86" width="30" height="6" fill="#f0e0c0"/>
+      <rect x="110" y="70" width="300" height="18" fill="#e8d8b8"/>
+      <polygon points="100,70 260,10 420,70" fill="#f0e0c0"/>
+      <polygon points="120,68 260,18 400,68" fill="#f5e8d0"/>
+      <circle cx="260" cy="48" r="8" fill="#e0d0b0"/>
+    </svg>
+  </div>
+
+  <div class="scroll-wrapper" id="scrollWrapper">
+    <div class="scroll-paper" id="scrollPaper">
+
+      <div class="start-content" id="startContent">
+        <h1 class="title">庭 院</h1>
+        <p class="subtitle">Courtyard</p>
+
+        <div class="divider"></div>
+
+        <p class="desc">
+          绮丽的丰茂庭院深处，<br>
+          金发绿眼的将军正在白色凉亭下翻书，<br>
+          等候你端来那盏混着柑橘与佛手香气的红茶。
+        </p>
+
+        <button class="start-btn" id="startBtn">
+          <span class="btn-frame"></span>
+          <svg class="flourish left" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <path d="M38,20 Q28,20 22,14 Q16,8 10,12 Q6,15 8,20 Q6,25 10,28 Q16,32 22,26 Q28,20 38,20 Z"
+                  fill="none" stroke="#c8a860" stroke-width="1"/>
+            <path d="M22,14 Q18,10 14,12" fill="none" stroke="#c8a860" stroke-width="0.8"/>
+            <path d="M22,26 Q18,30 14,28" fill="none" stroke="#c8a860" stroke-width="0.8"/>
+            <circle cx="8" cy="20" r="1.5" fill="#c8a860"/>
+            <path d="M38,20 L34,17 M38,20 L34,23" stroke="#c8a860" stroke-width="0.8" fill="none"/>
+          </svg>
+          <svg class="flourish right" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <path d="M38,20 Q28,20 22,14 Q16,8 10,12 Q6,15 8,20 Q6,25 10,28 Q16,32 22,26 Q28,20 38,20 Z"
+                  fill="none" stroke="#c8a860" stroke-width="1"/>
+            <path d="M22,14 Q18,10 14,12" fill="none" stroke="#c8a860" stroke-width="0.8"/>
+            <path d="M22,26 Q18,30 14,28" fill="none" stroke="#c8a860" stroke-width="0.8"/>
+            <circle cx="8" cy="20" r="1.5" fill="#c8a860"/>
+            <path d="M38,20 L34,17 M38,20 L34,23" stroke="#c8a860" stroke-width="0.8" fill="none"/>
+          </svg>
+          开 始 游 戏
+        </button>
+      </div>
+
+      <div class="game-content" id="gameContent">
+
+        <div class="page active" data-page="1">
+          <p class="game-text">唔，脑袋昏沉胀痛，迫使你不由得用手捂住脑袋匍匐在地面，可惜周遭的环境并不容你缓和一下，混合繁杂馥郁的花香几乎要让你窒息。你慢慢用手肘撑起地面直起上身，掌心却摸到了芳草的柔软和大理石的纹路。室外......？我刚刚不是还在孝企划吗？</p>
+          <p class="game-text">思绪就像被人投入许愿池的硬币，旋转着下坠，落入水中后又浮浮沉沉。你的眼睛终于聚焦，看清了地面，被细碎的螺钿和云母镶嵌的石阶在午后的阳光下泛着炫目的光，你茫然四顾，发现自己正身处一个绿草如茵的庭院之中。花圃里绽放着月季、鸢尾、以及说不上名字的异域花卉，柔软明亮，充满蛋白石的光辉，有时也闪着珍珠的色彩，包含着雾蒙蒙的甜香。你低头，身上穿着一件剪裁得体的侍女裙装，布料是上好的埃及棉，领口与袖口绣着细密的银线忍冬花纹，指尖触上去的瞬间，那凉滑的质感让你后颈一阵战栗。我难道是穿越进自己设立的那个王朝里了？我的OC在哪？</p>
+          <div class="continue-hint">▼ 续</div>
+        </div>
+
+        <div class="page" data-page="2">
+          <div class="choice-container">
+            <button class="choice-btn" data-next="3">
+              <svg class="corner tl" viewBox="0 0 14 14"><path d="M1,13 L1,1 L13,1" fill="none" stroke="#c8a860" stroke-width="1"/><circle cx="1" cy="1" r="1.2" fill="#c8a860"/></svg>
+              <svg class="corner tr" viewBox="0 0 14 14"><path d="M1,13 L1,1 L13,1" fill="none" stroke="#c8a860" stroke-width="1"/><circle cx="1" cy="1" r="1.2" fill="#c8a860"/></svg>
+              <svg class="corner bl" viewBox="0 0 14 14"><path d="M1,13 L1,1 L13,1" fill="none" stroke="#c8a860" stroke-width="1"/><circle cx="1" cy="1" r="1.2" fill="#c8a860"/></svg>
+              <svg class="corner br" viewBox="0 0 14 14"><path d="M1,13 L1,1 L13,1" fill="none" stroke="#c8a860" stroke-width="1"/><circle cx="1" cy="1" r="1.2" fill="#c8a860"/></svg>
+              啊，就算见到OC，祂恐怕还没来得及听我支吾就会把我拖下去吧。
+            </button>
+            <button class="choice-btn" data-next="3">
+              <svg class="corner tl" viewBox="0 0 14 14"><path d="M1,13 L1,1 L13,1" fill="none" stroke="#c8a860" stroke-width="1"/><circle cx="1" cy="1" r="1.2" fill="#c8a860"/></svg>
+              <svg class="corner tr" viewBox="0 0 14 14"><path d="M1,13 L1,1 L13,1" fill="none" stroke="#c8a860" stroke-width="1"/><circle cx="1" cy="1" r="1.2" fill="#c8a860"/></svg>
+              <svg class="corner bl" viewBox="0 0 14 14"><path d="M1,13 L1,1 L13,1" fill="none" stroke="#c8a860" stroke-width="1"/><circle cx="1" cy="1" r="1.2" fill="#c8a860"/></svg>
+              <svg class="corner br" viewBox="0 0 14 14"><path d="M1,13 L1,1 L13,1" fill="none" stroke="#c8a860" stroke-width="1"/><circle cx="1" cy="1" r="1.2" fill="#c8a860"/></svg>
+              啊！见到OC，好好和她聊聊，一切都会好的，况且现在中国应该正是，，元末明初？
+            </button>
+          </div>
+        </div>
+
+        <div class="page" data-page="3">
+          <p class="game-text">还没等你多加思忖，一个扈从打扮的青年就从庭院深处走来，皮靴跟叩石板的声音由远及近，他的眉头蹙起，口气带着不容置疑的紧迫，催促着你，主人正在前面的凉亭等着呢。你来不及询问这个国度的名字，手就先一步拿起了托盘，穿过回廊，穿过花丛，穿过那座被雕花廊柱与垂落的锦缎帷幕半遮半掩的白色凉亭。</p>
+          <div class="continue-hint">▼ 续</div>
+        </div>
+
+        <div class="page" data-page="4">
+          <p class="game-text">然后你看见了他。</p>
+          <p class="game-text">亮白色的雕带上，花卉浮雕抑扬顿挫地往左右两边张扬的罗马柱白色凉亭下，坐着一个英俊男人，因为炽热而显得稀薄的夏日空气里，他显得格外让人目眩神晕。金发慷慨地展示着阳光的温度，绿眼低垂，头戴月桂叶冠，身穿厚重得近乎不合时宜的胸甲与臂铠，甲面上錾刻着繁复的缠枝纹。在庭院炽热丰沛的阳光下，每一道银色凹槽都盛满了流金。他背脊挺直，正在翻书，金色睫毛与高挺流畅的鼻梁在脸颊投下片锋利的阴影，嘴唇抿成一条淡色的线。明明身处一片鲜妍之中，神情却依旧寡淡冷峻。他开始风尘仆仆，似乎是回到家。</p>
+          <div class="continue-hint">▼ 续</div>
+        </div>
+
+        <div class="page" data-page="5">
+          <p class="game-text">你认出他了，是痛企划的企友的OC，那个没有属国的将军，塞弗·沃斯。你开始拼命回想你还记得的设定：他父亲为求一子，曾向战神献祭了整整一草坪的孪生绵羊。而关于他本人，还有一个更令你记忆犹新的设定.....可恶的塞弗中之人的恶趣味，你那该死的好奇心！</p>
+          <p class="game-text">你的目光不由自主地向下飘去。可惜他双腿交叠，银甲的下缘沉默地截断了你所有旖旎的想象。</p>
+          <p class="game-text">你只好低头，看着自己手中的托盘，托盘上放着裹着夏日悠长午后精华的金黄色杏子，还有一盏精巧的陶瓷茶盏，盏口描着一圈暗金。红茶液在其中微微晃动，像是莲花上的一点月光。茶香四溢，是某种带着柑橘与佛手气息的混合香料，闻起来贵得让人心疼。可不由自主的，你的双手开始发抖，某种冰凉的、熟悉的恐惧从指尖沿着手腕一路爬到后颈。你想起了什么。那思绪如夏日惊雷一闪而过。你是否能在它消弭于无形前抓住它？</p>
+          <div class="continue-hint" id="hintToEmoji">▼ 续</div>
+        </div>
+
+        <div class="page" data-page="6">
+          <p class="emoji-instruction">在五秒内，抓住那八个一闪而过的念头。</p>
+          <div class="emoji-area" id="emojiArea">
+            <div class="emoji-timer" id="emojiTimer">5.0s</div>
+          </div>
+        </div>
+
+        <div class="page" data-page="7">
+          <p class="game-text">你明白了。你想起了一切。坐在面前的这个刚才还只在Procreate里存在，现在却活生生坐在你面前的男人曾经躲过七十多次暗杀与伏击。</p>
+          <p class="game-text">茶。茶不是你自己沏的。你没有亲眼看着它被与牛奶一起注入壶中，被端上托盘，被送到你手里。甚至在你刚穿越来意识昏迷的那会，它也离开了你的视线。</p>
+          <p class="game-text">这里可是中世纪，你不会想尝试一下那些骇人酷刑的，哪怕概率很低。</p>
+          <p class="game-text">于是你手指一松。陶瓷茶盏与金属托盘一起砸落，在地砖上炸开一声脆响，滚烫的茶汤泼溅在裙摆和靴面上。你踉跄着向斜前方扑倒，试图抓住什么，双腿却被凉亭的栏杆绊住，意料以外的失衡坠落来得猝不及防，你失声的尖叫开始变得格外情真意切，划破了静谧庭院的上空。你倒栽葱般跌出了亭子的边界，摔进亭外那片被精心侍弄的花丛里，压倒一片盛放的百合。枝叶折断，花瓣纷飞，花园飘来浓郁的稠李气味，柔弱无力地消散在难以言喻的辽阔空间。</p>
+          <p class="game-text">最后目之所及之处，你看见塞弗终于从书页上抬起双眼，绿色的瞳孔像两颗被投入湖心的冷翡翠，嘴唇微启，搁置下书本大步朝你走来。</p>
+          <div class="continue-hint" data-ending="1">▼ 尾声</div>
+        </div>
+
+        <div class="page" data-page="8">
+          <p class="game-text">只不过是一些既视感罢了，虽然你的手指仍在颤抖，但你决定把它归结为那具不属于你的身体里翻涌的陌生记忆，以及面前这个男人近乎压迫的存在感。你端着茶盏走向前，步履平缓，如贝壳般饱满洁净的裙摆擦过大理石地面，发出窸窸窣窣的声音。塞弗没有抬头。他的手指仍搭在书页边缘，修长的指腹有一层厚茧，是常年握剑留下的痕迹。你把茶盏放在他手边的矮几上，瓷器与木面接触时磕出一声轻响，如同缀吻。他翻了一页。然后端起茶盏，浅浅抿了一口。</p>
+          <p class="game-text">你退到旁边。一切似乎都正常。风吹过廊柱间垂落的锦缎，如交响曲般舒缓着飘走。你侍候在一侧，但一种说不清来处的焦躁却从胃底升起来。你换了换脚的重心，手指无意识地绞住裙摆的银线绣边，又松开。你盯着塞弗手中的茶盏，盯着他咽下那一小口红茶时喉结轻轻滚动。</p>
+          <p class="game-text">塞弗又翻了一页。</p>
+          <p class="game-text">然后他的手停住了。那双略显疲惫的双眼合上了一瞬又睁开，他非常平静地把书合上，伸手抓起桌面上的手帕捂住口鼻，单手扶着茶几站了起来。手帕的边缘立刻洇出一小片暗色。他的肩膀绷紧了，脊背从原本松弛的阅读姿态一寸寸拔直，肌肉在盔甲缝隙间绷出清晰的轮廓。他的呼吸从平稳转为短促，又从短促压成克制的吸气。那双黄绿色眼睛终于抬起来，越过手帕的上缘，看向你。但眼神里没有愤怒，讶然也不多，更多是打量，似乎在想到底你在其中穿梭过几个流程。</p>
+          <p class="game-text">你连连后退，最终无力地跌坐在了凉亭栏杆上，居然是下毒，茶水里有毒。这根本不公平，你才刚穿越来，连新手引导都没用，这么俗套狗血的剧情就发生了，何况你也不大认识这个男人，没法为自己辩解一二。</p>
+          <p class="game-text">扈从们不知从哪里涌出。靴声急促而整齐，但没有人看你。没有人推你、抓你、质问你。他们把塞弗围在中间，像蜂群围住蜂王。而塞弗被搀扶起来时，手帕仍捂在口鼻上。他干咳了两声，引起周围一阵吸气，他伸出左手做了个手势，马上外围的几个扈从就四散开，一人收拢茶杯与茶壶，一人朝你慢慢走来。</p>
+          <p class="game-text">那杯茶还在桌面上，茶液表面已不再晃动，静静倒映着凉亭外扭曲的花影和锦缎的垂角。你的双手被反缚在身后时，怨恨地想，为什么空气中仍然充满了樱桃色的甜蜜和金翅雀樱桃色的啾鸣，弥漫着薰衣草的气味和温柔的光芒？</p>
+          <div class="continue-hint" data-ending="2">▼ 尾声</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="footer" id="footer">Audentes fortuna you</div>
+
+  <div class="ending-screen" id="endingScreen">
+    <div class="ending-name" id="endingName"></div>
+    <button class="restart-btn" id="restartBtn">再 来 一 次</button>
+  </div>
+
+  <script>
+    const state = {
+      currentPage: 1,
+      canAdvance: true,
+      emojiTimerId: null,
+      emojiStartTime: 0,
+      emojiTickId: null,
+    };
+
+    const scrollWrapper = document.getElementById('scrollWrapper');
+    const scrollPaper   = document.getElementById('scrollPaper');
+    const startContent  = document.getElementById('startContent');
+    const gameContent   = document.getElementById('gameContent');
+    const startBtn      = document.getElementById('startBtn');
+    const footer        = document.getElementById('footer');
+    const endingScreen  = document.getElementById('endingScreen');
+    const endingName    = document.getElementById('endingName');
+    const restartBtn    = document.getElementById('restartBtn');
+    const temple        = document.getElementById('temple');
+
+    function showPage(n) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const target = document.querySelector(`.page[data-page="${n}"]`);
+      if (target) {
+        target.classList.add('active');
+        state.currentPage = n;
+        state.canAdvance = !(n === 2 || n === 6);
+        scrollPaper.scrollTop = 0;
+        if (n === 6) {
+          setTimeout(startEmojiGame, 400);
+        }
+      }
+    }
+
+    function advance() {
+      if (!state.canAdvance) return;
+      const next = state.currentPage + 1;
+      if (next <= 8) showPage(next);
+    }
+
+    startBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      scrollWrapper.classList.add('expanded');
+      startContent.style.opacity = '0';
+      setTimeout(() => {
+        startContent.style.display = 'none';
+        gameContent.classList.add('visible');
+        footer.style.opacity = '0.3';
+        showPage(1);
+      }, 400);
+    });
+
+    scrollPaper.addEventListener('click', (e) => {
+      if (e.target.closest('.choice-btn')) return;
+      if (e.target.closest('.float-emoji')) return;
+      if (e.target.closest('.continue-hint')) {
+        const ed = e.target.closest('.continue-hint').dataset.ending;
+        if (ed) { showEnding(ed); return; }
+      }
+      advance();
+    });
+
+    document.querySelectorAll('.choice-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const next = parseInt(btn.dataset.next, 10);
+        showPage(next);
+      });
+    });
+
+    /* ========= Emoji 游戏 ========= */
+    const ALL_EMOJIS = ['🎞️','🪙','⚖️','🪜','🪤','🪞','🗝️','🪩','📜','🏷️','🗃️','📝'];
+    const GAME_DURATION = 5000;
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function startEmojiGame() {
+      const area = document.getElementById('emojiArea');
+      const timerEl = document.getElementById('emojiTimer');
+      area.querySelectorAll('.float-emoji').forEach(el => el.remove());
+
+      const chosen = shuffle(ALL_EMOJIS).slice(0, 8);
+      let clicked = 0;
+      let finished = false;
+
+      const areaRect = area.getBoundingClientRect();
+      const W = areaRect.width;
+      const H = areaRect.height;
+
+      chosen.forEach((emoji, i) => {
+        const el = document.createElement('span');
+        el.className = 'float-emoji';
+        el.textContent = emoji;
+
+        const cols = 4, rows = 2;
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const cellW = W / cols;
+        const cellH = H / rows;
+        const pad = 30;
+        const maxLeft = Math.max(0, cellW - pad * 2 - 40);
+        const maxTop  = Math.max(0, cellH - pad * 2 - 40);
+        const left = col * cellW + pad + Math.random() * maxLeft;
+        const top  = row * cellH + pad + Math.random() * maxTop;
+
+        el.style.left = left + 'px';
+        el.style.top  = top + 'px';
+        el.style.animationDelay = (Math.random() * 1.5) + 's';
+        el.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+
+        el.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          if (finished || el.classList.contains('gone')) return;
+          el.classList.add('gone');
+          clicked++;
+          if (clicked >= 8) {
+            finished = true;
+            clearTimeout(state.emojiTimerId);
+            clearInterval(state.emojiTickId);
+            timerEl.textContent = '0.0s';
+            setTimeout(() => showPage(7), 500);
+          }
+        });
+
+        // 移动端触摸支持
+        el.addEventListener('touchstart', (ev) => {
+          ev.stopPropagation();
+          if (finished || el.classList.contains('gone')) return;
+          el.classList.add('gone');
+          clicked++;
+          if (clicked >= 8) {
+            finished = true;
+            clearTimeout(state.emojiTimerId);
+            clearInterval(state.emojiTickId);
+            timerEl.textContent = '0.0s';
+            setTimeout(() => showPage(7), 500);
+          }
+        }, { passive: true });
+
+        area.appendChild(el);
+      });
+
+      state.emojiStartTime = Date.now();
+      timerEl.textContent = '5.0s';
+      state.emojiTickId = setInterval(() => {
+        const elapsed = Date.now() - state.emojiStartTime;
+        const remaining = Math.max(0, (GAME_DURATION - elapsed) / 1000);
+        timerEl.textContent = remaining.toFixed(1) + 's';
+      }, 100);
+
+      state.emojiTimerId = setTimeout(() => {
+        if (finished) return;
+        finished = true;
+        clearInterval(state.emojiTickId);
+        showPage(8);
+      }, GAME_DURATION);
+    }
+
+    /* ========= 结局 ========= */
+    function showEnding(which) {
+      const name = which === '1'
+        ? '在他的庭院中'
+        : '无论如何是时候死亡回归了';
+
+      scrollWrapper.classList.add('gone');
+      footer.style.opacity = '0';
+
+      endingName.textContent = name;
+      endingScreen.classList.add('visible');
+      setTimeout(() => {
+        endingName.classList.add('fade-in');
+      }, 400);
+      setTimeout(() => {
+        restartBtn.classList.add('visible');
+      }, 3000);
+    }
+
+    restartBtn.addEventListener('click', () => {
+      endingScreen.classList.remove('visible');
+      endingName.classList.remove('fade-in');
+      restartBtn.classList.remove('visible');
+      endingName.textContent = '';
+
+      scrollWrapper.classList.remove('gone');
+      scrollWrapper.classList.remove('expanded');
+      footer.style.opacity = '';
+
+      startContent.style.display = '';
+      startContent.style.opacity = '1';
+      gameContent.classList.remove('visible');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelector('.page[data-page="1"]').classList.add('active');
+      state.currentPage = 1;
+      state.canAdvance = true;
+      scrollPaper.scrollTop = 0;
+    });
+
+  </script>
+
+</body>
+</html>
